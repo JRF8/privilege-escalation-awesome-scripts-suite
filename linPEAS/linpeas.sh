@@ -3254,6 +3254,12 @@ if [ "`echo $CHECKS | grep IntFiles`" ]; then
     timeout 150 grep -RiIE "username.*[=:].+" /var/www $backup_folders_row /tmp /etc /root /mnt /private 2>/dev/null | sed '/^.\{150\}./d' | grep -v "#" | grep -v "/linpeas" | sort | uniq | head -n 70 | sed -${E} "s,[uU][sS][eE][rR][nN][aA][mM][eE],${SED_RED},g"
     echo ""
 
+        for founduser in $(awk '!/\/sbin\/nologin/ && !/\/bin\/false/ { print }' /etc/passwd | cut -d ":" -f 1); do
+                  printf $Y"[+] "$GREEN"Finding '$founduser' string inside key folders (limit 70)\n"$NC;
+                  timeout 120 grep -RiIE "\b$founduser\b" $HOMESEARCH /Users 2>/dev/null | sed '/^.\{150\}./d' | grep -v "#" | grep -v "/linpeas" | sort | uniq | head -n 70 | sed -E "s,$founduser,${C}[1;31m&${C}[0m,g";
+                   timeout 120 grep -RiIE "\b$founduser\b" /var/www $backup_folders_row /tmp /etc /root /mnt /private 2>/dev/null | sed '/^.\{150\}./d' | grep -v "#" | grep -v "/linpeas" | sort | uniq | head -n 70 | sed -E "s,$founduser,${C}[1;31m&${C}[0m,g";
+        done
+
     ##-- IF) Specific hashes inside files
     print_2title "Searching specific hashes inside files - less false positives (limit 70)"
     regexblowfish='\$2[abxyz]?\$[0-9]{2}\$[a-zA-Z0-9_/\.]*'
